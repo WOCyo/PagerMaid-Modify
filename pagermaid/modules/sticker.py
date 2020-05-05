@@ -40,7 +40,12 @@ async def sticker(context):
               message.media.document.attributes):
             photo = BytesIO()
             await bot.download_file(message.media.document, "AnimatedSticker.tgs")
-            emoji = message.media.document.attributes[1].alt
+            for index in range(len(message.media.document.attributes)):
+                try:
+                    emoji = message.media.document.attributes[index].alt
+                    break
+                except:
+                    pass
             custom_emoji = True
             animated = True
             photo = 1
@@ -97,15 +102,15 @@ A pack can't have more than 120 stickers at the moment.":
                     pack += 1
                     pack_name = f"{user.username}_{pack}"
                     pack_title = f"@{user.username} 的私藏 ({pack})"
-                    await context.edit("Switching to pack " + str(pack) +
-                                       " since previous pack is full . . .")
+                    await context.edit("切换到私藏 " + str(pack) +
+                                       " 上一个贴纸包已满 . . .")
                     await conversation.send_message(pack_name)
                     chat_response = await conversation.get_response()
                     if chat_response.text == "Invalid pack selected.":
                         await add_sticker(conversation, command, pack_title, pack_name, animated, message,
                                           context, file, emoji)
                         await context.edit(
-                            f"Sticker has been added to [this](t.me/addstickers/{pack_name}) alternative pack.",
+                            f"这张图片/贴纸已经被添加到 [这个](t.me/addstickers/{pack_name}) 贴纸包。",
                             parse_mode='md')
                         return
                 await upload_sticker(animated, message, context, file, conversation)

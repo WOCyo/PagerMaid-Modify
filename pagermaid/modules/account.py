@@ -174,14 +174,14 @@ async def profile(context):
             user_object = await context.client.get_entity(user)
             target_user = await context.client(GetFullUserRequest(user_object.id))
         except (TypeError, ValueError, OverflowError, StructError) as exception:
-            if str(exception).startswith("出错了呜呜呜 ~ 找不到与之对应的任何内容"):
+            if str(exception).startswith("Cannot find any entity corresponding to"):
                 await context.edit("出错了呜呜呜 ~ 指定的用户不存在。")
                 return
-            if str(exception).startswith("出错了呜呜呜 ~ 没有用户"):
+            if str(exception).startswith("No user has"):
                 await context.edit("出错了呜呜呜 ~ 指定的道纹不存在。")
                 return
-            if str(exception).startswith("出错了呜呜呜 ~ 您确定输入了东西？") or isinstance(exception, StructError):
-                await context.edit("出错了呜呜呜 ~ 找不到对应的 UserID 。")
+            if str(exception).startswith("Could not find the input entity for") or isinstance(exception, StructError):
+                await context.edit("出错了呜呜呜 ~ 无法通过此 UserID 找到对应的用户。")
                 return
             if isinstance(exception, OverflowError):
                 await context.edit("出错了呜呜呜 ~ 指定的 UserID 已超出长度限制，您确定输对了？")
@@ -195,6 +195,8 @@ async def profile(context):
         "喵喵喵 ~ 好像没有设置"
     )
     biography = target_user.about if target_user.about is not None else "没有公开的情报"
+    verified = "是" if target_user.user.verified else "否"
+    restricted = "是" if target_user.user.restricted else "否"
     caption = f"**用户简介:** \n" \
               f"道纹: {username_system} \n" \
               f"ID: {target_user.user.id} \n" \
@@ -202,8 +204,8 @@ async def profile(context):
               f"姓氏: {last_name} \n" \
               f"目前已知的情报: {biography} \n" \
               f"共同裙: {target_user.common_chats_count} \n" \
-              f"官方认证: {target_user.user.verified} \n" \
-              f"受限制: {target_user.user.restricted} \n" \
+              f"官方认证: {verified} \n" \
+              f"受限制: {restricted} \n" \
               f"类型: {user_type} \n" \
               f"[{first_name}](tg://user?id={target_user.user.id})"
     photo = await context.client.download_profile_photo(
@@ -244,7 +246,10 @@ async def profile(context):
             if not photo.startswith("http"):
                 remove(photo)
             await context.delete()
-            remove(photo)
+            try:
+                remove(photo)
+            except:
+                pass
             return
         except TypeError:
             await context.edit(caption)
