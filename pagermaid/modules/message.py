@@ -17,26 +17,37 @@ async def userid(context):
     """ Query the UserID of the sender of the message you replied to. """
     message = await context.get_reply_message()
     if message:
-        if not message.forward:
-            user_id = message.sender.id
-            if message.sender.username:
-                target = "@" + message.sender.username
-            else:
-                try:
-                    target = "**" + message.sender.first_name + "**"
-                except TypeError:
-                    target = "**" + "死号" + "**"
-
+        user_id = message.sender.id
+        if message.sender.username:
+            target = "@" + message.sender.username
         else:
-            user_id = message.forward.sender.id
-            if message.forward.sender.username:
-                target = "@" + message.forward.sender.username
-            else:
-                target = "*" + message.forward.sender.first_name + "*"
-        await context.edit(
-            f"**道纹:** {target} \n"
-            f"**用户ID:** `{user_id}`"
-        )
+            try:
+                target = "**" + message.sender.first_name + "**"
+            except TypeError:
+                target = "**" + "死号" + "**"
+        if not message.forward:
+            await context.edit(
+                f"**以下是被回复消息的信息** \n\n**道纹:** {target} \n"
+                f"**用户ID:** `{user_id}`"
+             )
+        else:
+            try:
+                user_f_id = message.forward.sender.id
+                if message.forward.sender.username:
+                    target_f = "@" + message.forward.sender.username
+                else:
+                    target_f = "*" + message.forward.sender.first_name + "*"
+                await context.edit(
+                    f"**以下是被回复消息的信息** \n\n**道纹:** {target} \n"
+                    f"**用户ID:** `{user_id}` \n\n**以下是转发来源信息** \n\n"
+                    f"**道纹:** {target_f} \n"
+                    f"**用户ID:** `{user_f_id}`"
+                 )
+            except:
+                await context.edit(
+                    f"**以下是被回复消息的信息** \n\n**道纹:** {target} \n"
+                    f"**用户ID:** `{user_id}` \n\n**此消息没有包含被转发用户的信息** \n\n"
+                 )
     else:
         await context.edit("出错了呜呜呜 ~ 无法获取所回复消息的信息。")
 
@@ -157,7 +168,17 @@ async def feet2meter(context):
           description="发送一句一言")
 async def hitokoto(context):
     """ Get hitokoto.cn """
-    hitokoto_json = json.loads(requests.get("https://v1.hitokoto.cn/?charset=utf-8").content.decode("utf-8"))
+    hitokoto_while = 1
+    try:
+        hitokoto_json = json.loads(requests.get("https://v1.hitokoto.cn/?charset=utf-8").content.decode("utf-8"))
+    except (ValueError):
+        while hitokoto_while < 10:
+            hitokoto_while += 1
+            try:
+                hitokoto_json = json.loads(requests.get("https://v1.hitokoto.cn/?charset=utf-8").content.decode("utf-8"))
+                break
+            except:
+                continue
     if hitokoto_json['type'] == 'a':
         hitokoto_type = '动画'
     elif hitokoto_json['type'] == 'b':
