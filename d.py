@@ -53,9 +53,7 @@ async def selfprune(context):
         count_buffer += 1
     await log(f"批量删除了自行发送的 {str(count)} 条消息。")
     notification = await send_prune_notify(context, count)
-    await sleep(.5)
-    await notification.delete()
-
+  
 
 @listener(outgoing=True, command="dyou",
           description="删除当前对话您回复用户所发送的特定数量的消息。限制：基于消息 ID 的 1000 条消息，大于 1000 条可能会触发删除消息过快限制。（倒序、需要删除消息权限）当数字足够大时即可实现删除所有消息。",
@@ -108,7 +106,5 @@ async def delete(context):
 async def send_prune_notify(context, count):
     return await context.client.send_message(
         context.chat_id,
-        "删除了 "
-        + str(count)
-        + " 条消息。"
+        "本人消息已清,朋友来世再见"
     )
